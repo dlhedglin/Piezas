@@ -1,5 +1,7 @@
 #include "Piezas.h"
 #include <vector>
+#include <iostream>
+using namespace std;
 /** CLASS Piezas
  * Class for representing a Piezas vertical board, which is roughly based
  * on the game "Connect Four" where pieces are placed in a column and 
@@ -15,13 +17,18 @@
  * dropped in column 2 should take [1,2].
 **/
 
-
 /**
  * Constructor sets an empty board (default 3 rows, 4 columns) and 
  * specifies it is X's turn first
 **/
 Piezas::Piezas()
 {
+    turn = X;
+    board.resize(3);
+    for (int i = 0; i < board.size(); i++)
+    {
+        board[i].resize(BOARD_COLS, Blank);
+    }
 }
 
 /**
@@ -30,6 +37,13 @@ Piezas::Piezas()
 **/
 void Piezas::reset()
 {
+    for (int i = 0; i < BOARD_ROWS; i++)
+    {
+        for (int j = 0; j < BOARD_COLS; j++)
+        {
+            board[i][j] = Blank;
+        }
+    }
 }
 
 /**
@@ -39,9 +53,29 @@ void Piezas::reset()
  * In that case, placePiece returns Piece Blank value 
  * Out of bounds coordinates return the Piece Invalid value
  * Trying to drop a piece where it cannot be placed loses the player's turn
-**/ 
+**/
 Piece Piezas::dropPiece(int column)
 {
+    Piece p = turn;
+    if (column > BOARD_COLS || column < 0)
+        return Invalid;
+    for (int i = BOARD_ROWS - 1; i >= 0; i--)
+    {
+        if (board[i][column] == Blank)
+        {
+            board[i][column] = turn;
+            if (turn == X)
+                turn = O;
+            else
+                turn = X;
+            return p;
+        }
+    }
+    if (turn == X)
+        turn = O;
+    else
+        turn = X;
+
     return Blank;
 }
 
@@ -51,7 +85,9 @@ Piece Piezas::dropPiece(int column)
 **/
 Piece Piezas::pieceAt(int row, int column)
 {
-    return Blank;
+    if (row < 0 || row > BOARD_ROWS || column < 0 || column > BOARD_COLS)
+        return Invalid;
+    return board[row][column];
 }
 
 /**
@@ -65,5 +101,65 @@ Piece Piezas::pieceAt(int row, int column)
 **/
 Piece Piezas::gameState()
 {
+    for (int i = 0; i < BOARD_ROWS; i++)
+    {
+        for (int j = 0; j < BOARD_COLS; j++)
+        {
+            if (board[i][j] == Blank)
+                return Invalid;
+        }
+    }
+    int playerX = 0;
+    int playerY = 0;
+    for (int i = 0; i < BOARD_ROWS; i++)
+    {
+        int xCount = 0;
+        int yCount = 0;
+        for (int j = 0; j < BOARD_COLS; j++)
+        {
+            if (board[i][j] == X)
+            {
+                yCount = 0;
+                xCount++;
+                if (xCount > playerX)
+                    playerX = xCount;
+            }
+            else
+            {
+                xCount = 0;
+                yCount++;
+                if (yCount > playerY)
+                    playerY = yCount;
+            }
+        }
+    }
+
+    for (int i = 0; i < BOARD_COLS; i++)
+    {
+        int xCount = 0;
+        int yCount = 0;
+        for (int j = 0; j < BOARD_ROWS; j++)
+        {
+            if (board[j][i] == X)
+            {
+                yCount = 0;
+                xCount++;
+                if (xCount > playerX)
+                    playerX = xCount;
+            }
+            else
+            {
+                xCount = 0;
+                yCount++;
+                if (yCount > playerY)
+                    playerY = yCount;
+            }
+        }
+    }
+    if(playerX > playerY)
+        return X;
+    else if(playerY > playerX)
+        return O;
+
     return Blank;
 }
